@@ -7,36 +7,20 @@
     <style>
         body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 0; touch-action: manipulation; }
         .container { padding: 15px; }
-        
-        /* High Visibility Player Select */
         #userSel { 
-            width: 100%; 
-            background: #111; 
-            color: #00ff41; 
-            border: 2px solid #333; 
-            padding: 15px; 
-            border-radius: 10px; 
-            font-size: 22px; 
-            font-weight: bold; 
-            margin: 10px 0 20px 0;
-            appearance: none; /* Cleaner look for mobile */
-            text-align: center;
+            width: 100%; background: #111; color: #00ff41; border: 2px solid #333; 
+            padding: 15px; border-radius: 10px; font-size: 22px; font-weight: bold; 
+            margin: 10px 0 20px 0; text-align: center;
         }
-
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .box { border: 2px solid #00ff41; border-radius: 12px; padding: 12px; text-align: center; background: #000; }
-        .label { color: #00ff41; font-size: 13px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        
+        .label { color: #00ff41; font-size: 13px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
         input { background: #000; color: #fff; border: 1px solid #444; padding: 10px; width: 85%; border-radius: 8px; font-size: 26px; text-align: center; font-weight: bold; }
         select { background: #000; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; font-size: 18px; width: 100%; font-weight: bold; }
-
-        /* Super Clean Table - Massive Green Numbers */
         table { width: 100%; border-collapse: collapse; }
         td { border-bottom: 1px solid #222; padding: 18px 0; }
-        
         .club-name { color: #ffffff; font-weight: bold; font-size: 28px; width: 40%; }
         .carry { font-size: 55px; font-weight: bold; color: #00ff41; text-align: right; }
-
         .btns { display: flex; gap: 15px; margin-top: 30px; padding-bottom: 30px; }
         .btn { flex: 1; padding: 18px; border-radius: 12px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; }
         .btn-player { background: #222; color: #fff; border: 1px solid #444; }
@@ -46,7 +30,6 @@
 <body>
     <div class="container">
         <select id="userSel" onchange="changeUser()"></select>
-        
         <div class="dashboard">
             <div class="box">
                 <div class="label">TEMP °C</div>
@@ -62,18 +45,16 @@
                 </select>
             </div>
         </div>
-
         <table id="clubTable"></table>
-
         <div class="btns">
             <button class="btn btn-player" onclick="addUser()">+ Player</button>
             <button class="btn btn-club" onclick="addClub()">+ Club</button>
         </div>
     </div>
-
 <script>
     let user = "Jo";
-    let data = JSON.parse(localStorage.getItem('golfSunModeV2')) || { 
+    // I added your clubs back in here so it's not empty!
+    let data = JSON.parse(localStorage.getItem('golfSunModeV3')) || { 
         "Jo": [{n:'DR', b:250}, {n:'3W', b:224}, {n:'4H', b:204}, {n:'7I', b:150}],
         "Pete": [{n:'DR', b:230}, {n:'5W', b:200}, {n:'7I', b:140}]
     };
@@ -95,14 +76,46 @@
         t.innerHTML = "";
         data[user].forEach((c, i) => {
             let r = t.insertRow();
-            r.innerHTML = `
-                <td class="club-name" onclick="editClub(${i})">${c.n}</td>
-                <td class="carry" id="c-${i}">0</td>
-                <td onclick="del(${i})" style="color:#333; font-size:18px; text-align:right; padding-left:10px;">✕</td>
-            `;
+            r.innerHTML = `<td class="club-name" onclick="editClub(${i})">${c.n}</td><td class="carry" id="c-${i}">0</td><td onclick="del(${i})" style="color:#333; font-size:18px; text-align:right; padding-left:10px;">✕</td>`;
         });
         calc();
     }
 
     function calc() {
-        const tmp = parseFloat(document.getElementById('temp').value)
+        const tmp = parseFloat(document.getElementById('temp').value) || 20;
+        const wnd = parseFloat(document.getElementById('wind').value) || 0;
+        const dr = document.getElementById('dir').value;
+        const tf = 1 + ((tmp - 20) * 0.0025);
+        let wf = 1;
+        if(dr==='head') wf = 1 - (wnd*0.01);
+        if(dr==='tail') wf = 1 + (wnd*0.005);
+        data[user].forEach((c, i) => {
+            document.getElementById(`c-${i}`).innerText = Math.round(c.b * tf * wf);
+        });
+    }
+
+    function editClub(i) {
+        let newDist = prompt("Set baseline for " + data[user][i].n, data[user][i].b);
+        if (newDist) { data[user][i].b = parseFloat(newDist); localStorage.setItem('golfSunModeV3', JSON.stringify(data)); render(); }
+    }
+
+    function addClub() {
+        let n = prompt("Club Name:");
+        let b = prompt("Baseline Distance:");
+        if(n && b) { data[user].push({n: n.toUpperCase(), b: parseFloat(b)}); localStorage.setItem('golfSunModeV3', JSON.stringify(data)); render(); }
+    }
+
+    function addUser() {
+        let n = prompt("New Player Name:");
+        if(n && !data[n]) { data[n] = [{n:'DR', b:200}]; user = n; localStorage.setItem('golfSunModeV3', JSON.stringify(data)); init(); }
+    }
+
+    function del(i) {
+        if(confirm("Delete?")) { data[user].splice(i, 1); localStorage.setItem('golfSunModeV3', JSON.stringify(data)); render(); }
+    }
+
+    function changeUser() { user = document.getElementById('userSel').value; render(); }
+    init();
+</script>
+</body>
+</html>
