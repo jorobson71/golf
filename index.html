@@ -3,139 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GOLF V5</title>
+    <title>Jo & Pete's Golf Pro</title>
     <style>
-        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 0; }
-        .version-bar { background: red; color: white; text-align: center; font-weight: bold; padding: 5px; font-size: 12px; }
-        .container { padding: 10px; }
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .box { border: 2px solid #00ff41; border-radius: 10px; padding: 10px; text-align: center; }
-        .label { color: #00ff41; font-size: 12px; font-weight: bold; margin-bottom: 5px; }
-        input, select { background: #111; color: #fff; border: 1px solid #333; padding: 10px; width: 80%; border-radius: 5px; font-size: 18px; text-align: center; }
-        table { width: 100%; border-collapse: collapse; }
-        td { border-bottom: 1px solid #222; padding: 10px 0; }
-        .club-name { color: #00ff41; font-weight: bold; font-size: 20px; }
-        .carry { font-size: 35px; font-weight: bold; color: #00ff41; text-align: right; }
-        .btns { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { flex: 1; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-player { background: #333; color: #00ff41; }
-        .btn-club { background: #00ff41; color: #000; }
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #ffffff;
+            --accent-red: #ff4d4d;
+            --accent-green: #4ade80;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* The Famous Red Bar */
+        .header-bar {
+            width: 100%;
+            background-color: var(--accent-red);
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .setup-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        .label {
+            font-size: 1.4rem;
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        /* Large Inputs for Pete */
+        input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.8rem;
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        /* Wind Buttons Styling */
+        .wind-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .wind-btn {
+            background: #444;
+            border: 2px solid #666;
+            color: white;
+            padding: 15px 5px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .wind-btn.active {
+            background: var(--accent-green);
+            border-color: white;
+            color: black;
+        }
+
+        /* Club Button Grid */
+        .club-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .club-btn {
+            padding: 25px 10px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            border-radius: 12px;
+            border: none;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        /* Distinct Colors for Clubs */
+        .driver { background: #e63946; } /* Red */
+        .wood { background: #f4a261; }   /* Orange */
+        .hybrid { background: #e9c46a; } /* Yellow */
+        .iron { background: #2a9d8f; }   /* Teal */
+        .wedge { background: #457b9d; }  /* Blue */
+        .putter { background: #8d99ae; } /* Grey */
+
+        .result {
+            margin-top: 30px;
+            font-size: 1.8rem;
+            text-align: center;
+            font-weight: bold;
+            color: var(--accent-green);
+            min-height: 2.5rem;
+        }
     </style>
 </head>
 <body>
-    <div class="version-bar">VERSION 5 - NEWEST LOADED</div>
-    <div class="container">
-        <select id="userSel" onchange="changeUser()" style="width:100%; margin-bottom:10px;"></select>
-        
-        <div class="dashboard">
-            <div class="box">
-                <div class="label">TEMP °C</div>
-                <input type="number" id="temp" value="20" oninput="calc()">
-            </div>
-            <div class="box">
-                <div class="label">WIND MPH</div>
-                <input type="number" id="wind" value="0" oninput="calc()">
-                <select id="dir" onchange="calc()" style="margin-top:10px; font-size: 14px;">
-                    <option value="none">NO WIND</option>
-                    <option value="head">IN YOUR FACE</option>
-                    <option value="headDiag">DIAGONAL HEAD</option>
-                    <option value="tail">DIRECT TAILWIND</option>
-                    <option value="tailDiag">DIAGONAL TAIL</option>
-                </select>
-            </div>
-        </div>
 
-        <table id="clubTable"></table>
+    <div class="header-bar">
+        <h1>GOLF PRO V5</h1>
+    </div>
 
-        <div class="btns">
-            <button class="btn btn-player" onclick="addUser()">+ PLAYER</button>
-            <button class="btn btn-club" onclick="addClub()">+ CLUB</button>
+    <div class="setup-section">
+        <span class="label">DISTANCE (Yards)</span>
+        <input type="number" id="yards" placeholder="Enter Yards" inputmode="numeric">
+
+        <span class="label">WIND DIRECTION</span>
+        <div class="wind-grid">
+            <button class="wind-btn" onclick="setWind('Tail', this)">TAIL</button>
+            <button class="wind-btn" onclick="setWind('None', this)">NONE</button>
+            <button class="wind-btn" onclick="setWind('Head', this)">HEAD</button>
         </div>
     </div>
 
-<script>
-    let user = "Jo";
-    let data = JSON.parse(localStorage.getItem('golfV5')) || { "Jo": [{n:'DR', b:240}, {n:'7I', b:150}] };
+    <div class="club-grid">
+        <button class="club-btn driver" onclick="calculate('Driver')">DRIVER</button>
+        <button class="club-btn wood" onclick="calculate('3-Wood')">3-WOOD</button>
+        <button class="club-btn hybrid" onclick="calculate('Hybrid')">HYBRID</button>
+        <button class="club-btn iron" onclick="calculate('7-Iron')">7-IRON</button>
+        <button class="club-btn wedge" onclick="calculate('Wedge')">WEDGE</button>
+        <button class="club-btn putter" onclick="calculate('Putter')">PUTTER</button>
+    </div>
 
-    function init() {
-        const s = document.getElementById('userSel');
-        s.innerHTML = "";
-        Object.keys(data).forEach(n => {
-            let o = document.createElement('option');
-            o.value = n; o.innerText = "PLAYER: " + n;
-            s.appendChild(o);
-        });
-        s.value = user;
-        render();
-    }
+    <div class="result" id="output"></div>
 
-    function render() {
-        const t = document.getElementById('clubTable');
-        t.innerHTML = "";
-        data[user].forEach((c, i) => {
-            let r = t.insertRow();
-            r.innerHTML = `
-                <td><input type="text" value="${c.n}" oninput="save(${i},'n',this.value)" style="width:70px; font-size:16px;"></td>
-                <td><input type="number" value="${c.b}" oninput="save(${i},'b',this.value)" style="width:50px; font-size:16px;"></td>
-                <td class="carry" id="c-${i}">0</td>
-                <td onclick="del(${i})" style="color:red; padding-left:10px;">✕</td>
-            `;
-        });
-        calc();
-    }
+    <script>
+        let currentWind = 'None';
 
-    function calc() {
-        const tmp = parseFloat(document.getElementById('temp').value) || 20;
-        const wnd = parseFloat(document.getElementById('wind').value) || 0;
-        const dr = document.getElementById('dir').value;
-        const tf = 1 + ((tmp - 20) * 0.0025);
-        let wf = 1;
-        if(dr==='head') wf = 1 - (wnd*0.01);
-        if(dr==='headDiag') wf = 1 - (wnd*0.707*0.01);
-        if(dr==='tail') wf = 1 + (wnd*0.005);
-        if(dr==='tailDiag') wf = 1 + (wnd*0.707*0.005);
-
-        data[user].forEach((c, i) => {
-            document.getElementById(`c-${i}`).innerText = Math.round(c.b * tf * wf);
-        });
-    }
-
-    function save(i, f, v) {
-        data[user][i][f] = (f==='b') ? parseFloat(v)||0 : v;
-        localStorage.setItem('golfV5', JSON.stringify(data));
-        calc();
-    }
-
-    function addClub() {
-        data[user].push({n:'NEW', b:100});
-        localStorage.setItem('golfV5', JSON.stringify(data));
-        render();
-    }
-
-    function addUser() {
-        let n = prompt("Name:");
-        if(n && !data[n]) {
-            data[n] = [{n:'DR', b:240}];
-            user = n;
-            localStorage.setItem('golfV5', JSON.stringify(data));
-            init();
+        function setWind(direction, btn) {
+            currentWind = direction;
+            // Clear all active buttons
+            document.querySelectorAll('.wind-btn').forEach(b => b.classList.remove('active'));
+            // Set current button to active
+            btn.classList.add('active');
         }
-    }
 
-    function del(i) {
-        if(confirm("Delete?")) {
-            data[user].splice(i, 1);
-            localStorage.setItem('golfV5', JSON.stringify(data));
-            render();
+        function calculate(club) {
+            const yards = document.getElementById('yards').value;
+            const output = document.getElementById('output');
+            
+            if (!yards) {
+                output.innerHTML = "Enter yards first!";
+                return;
+            }
+
+            let adjustment = "";
+            if (currentWind === 'Head') adjustment = " (Aim +10%)";
+            if (currentWind === 'Tail') adjustment = " (Aim -10%)";
+
+            output.innerHTML = club + " for " + yards + "y" + adjustment;
         }
-    }
-
-    function changeUser() {
-        user = document.getElementById('userSel').value;
-        render();
-    }
-
-    init();
-</script>
+    </script>
 </body>
 </html>
