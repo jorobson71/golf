@@ -3,29 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GOLF V5</title>
+    <title>GOLF V5.2</title>
     <style>
-        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 0; }
-        .version-bar { background: red; color: white; text-align: center; font-weight: bold; padding: 5px; font-size: 12px; }
-        .container { padding: 10px; }
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .box { border: 2px solid #00ff41; border-radius: 10px; padding: 10px; text-align: center; }
-        .label { color: #00ff41; font-size: 12px; font-weight: bold; margin-bottom: 5px; }
-        input, select { background: #111; color: #fff; border: 1px solid #333; padding: 10px; width: 80%; border-radius: 5px; font-size: 18px; text-align: center; }
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 0; touch-action: manipulation; }
+        .container { padding: 15px; }
+        
+        /* High Visibility Player Select */
+        #userSel { 
+            width: 100%; 
+            background: #111; 
+            color: #00ff41; 
+            border: 2px solid #333; 
+            padding: 15px; 
+            border-radius: 10px; 
+            font-size: 22px; 
+            font-weight: bold; 
+            margin: 10px 0 20px 0;
+            appearance: none; /* Cleaner look for mobile */
+            text-align: center;
+        }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .box { border: 2px solid #00ff41; border-radius: 12px; padding: 12px; text-align: center; background: #000; }
+        .label { color: #00ff41; font-size: 13px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        input { background: #000; color: #fff; border: 1px solid #444; padding: 10px; width: 85%; border-radius: 8px; font-size: 26px; text-align: center; font-weight: bold; }
+        select { background: #000; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; font-size: 18px; width: 100%; font-weight: bold; }
+
+        /* Super Clean Table - Massive Green Numbers */
         table { width: 100%; border-collapse: collapse; }
-        td { border-bottom: 1px solid #222; padding: 10px 0; }
-        .club-name { color: #00ff41; font-weight: bold; font-size: 20px; }
-        .carry { font-size: 35px; font-weight: bold; color: #00ff41; text-align: right; }
-        .btns { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { flex: 1; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-player { background: #333; color: #00ff41; }
+        td { border-bottom: 1px solid #222; padding: 18px 0; }
+        
+        .club-name { color: #ffffff; font-weight: bold; font-size: 28px; width: 40%; }
+        .carry { font-size: 55px; font-weight: bold; color: #00ff41; text-align: right; }
+
+        .btns { display: flex; gap: 15px; margin-top: 30px; padding-bottom: 30px; }
+        .btn { flex: 1; padding: 18px; border-radius: 12px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; }
+        .btn-player { background: #222; color: #fff; border: 1px solid #444; }
         .btn-club { background: #00ff41; color: #000; }
     </style>
 </head>
 <body>
-    <div class="version-bar">VERSION 5 - NEWEST LOADED</div>
     <div class="container">
-        <select id="userSel" onchange="changeUser()" style="width:100%; margin-bottom:10px;"></select>
+        <select id="userSel" onchange="changeUser()"></select>
         
         <div class="dashboard">
             <div class="box">
@@ -35,12 +55,10 @@
             <div class="box">
                 <div class="label">WIND MPH</div>
                 <input type="number" id="wind" value="0" oninput="calc()">
-                <select id="dir" onchange="calc()" style="margin-top:10px; font-size: 14px;">
+                <select id="dir" onchange="calc()" style="margin-top:10px;">
                     <option value="none">NO WIND</option>
-                    <option value="head">IN YOUR FACE</option>
-                    <option value="headDiag">DIAGONAL HEAD</option>
-                    <option value="tail">DIRECT TAILWIND</option>
-                    <option value="tailDiag">DIAGONAL TAIL</option>
+                    <option value="head">IN FACE</option>
+                    <option value="tail">FOLLOWING</option>
                 </select>
             </div>
         </div>
@@ -48,21 +66,24 @@
         <table id="clubTable"></table>
 
         <div class="btns">
-            <button class="btn btn-player" onclick="addUser()">+ PLAYER</button>
-            <button class="btn btn-club" onclick="addClub()">+ CLUB</button>
+            <button class="btn btn-player" onclick="addUser()">+ Player</button>
+            <button class="btn btn-club" onclick="addClub()">+ Club</button>
         </div>
     </div>
 
 <script>
     let user = "Jo";
-    let data = JSON.parse(localStorage.getItem('golfV5')) || { "Jo": [{n:'DR', b:250}, {n:'3W', b:224}, {n:'4H', b:204}, {n:'3I', b:184}, {n:'5I', b:164}, {n:'6I', b:154}] };
+    let data = JSON.parse(localStorage.getItem('golfSunModeV2')) || { 
+        "Jo": [{n:'DR', b:250}, {n:'3W', b:224}, {n:'4H', b:204}, {n:'7I', b:150}],
+        "Pete": [{n:'DR', b:230}, {n:'5W', b:200}, {n:'7I', b:140}]
+    };
 
     function init() {
         const s = document.getElementById('userSel');
         s.innerHTML = "";
         Object.keys(data).forEach(n => {
             let o = document.createElement('option');
-            o.value = n; o.innerText = "PLAYER: " + n;
+            o.value = n; o.innerText = "PLAYER: " + n.toUpperCase();
             s.appendChild(o);
         });
         s.value = user;
@@ -75,67 +96,13 @@
         data[user].forEach((c, i) => {
             let r = t.insertRow();
             r.innerHTML = `
-                <td><input type="text" value="${c.n}" oninput="save(${i},'n',this.value)" style="width:70px; font-size:16px; color:#00ff41; font-weight:bold;"></td>
-                <td><input type="number" value="${c.b}" oninput="save(${i},'b',this.value)" style="width:50px; font-size:16px;"></td>
+                <td class="club-name" onclick="editClub(${i})">${c.n}</td>
                 <td class="carry" id="c-${i}">0</td>
-                <td onclick="del(${i})" style="color:red; padding-left:10px;">✕</td>
+                <td onclick="del(${i})" style="color:#333; font-size:18px; text-align:right; padding-left:10px;">✕</td>
             `;
         });
         calc();
     }
 
     function calc() {
-        const tmp = parseFloat(document.getElementById('temp').value) || 20;
-        const wnd = parseFloat(document.getElementById('wind').value) || 0;
-        const dr = document.getElementById('dir').value;
-        const tf = 1 + ((tmp - 20) * 0.0025);
-        let wf = 1;
-        if(dr==='head') wf = 1 - (wnd*0.01);
-        if(dr==='headDiag') wf = 1 - (wnd*0.007);
-        if(dr==='tail') wf = 1 + (wnd*0.005);
-        if(dr==='tailDiag') wf = 1 + (wnd*0.0035);
-
-        data[user].forEach((c, i) => {
-            document.getElementById(`c-${i}`).innerText = Math.round(c.b * tf * wf);
-        });
-    }
-
-    function save(i, f, v) {
-        data[user][i][f] = (f==='b') ? parseFloat(v)||0 : v;
-        localStorage.setItem('golfV5', JSON.stringify(data));
-        calc();
-    }
-
-    function addClub() {
-        data[user].push({n:'NEW', b:100});
-        localStorage.setItem('golfV5', JSON.stringify(data));
-        render();
-    }
-
-    function addUser() {
-        let n = prompt("Name:");
-        if(n && !data[n]) {
-            data[n] = [{n:'DR', b:250}];
-            user = n;
-            localStorage.setItem('golfV5', JSON.stringify(data));
-            init();
-        }
-    }
-
-    function del(i) {
-        if(confirm("Delete?")) {
-            data[user].splice(i, 1);
-            localStorage.setItem('golfV5', JSON.stringify(data));
-            render();
-        }
-    }
-
-    function changeUser() {
-        user = document.getElementById('userSel').value;
-        render();
-    }
-
-    init();
-</script>
-</body>
-</html>
+        const tmp = parseFloat(document.getElementById('temp').value)
