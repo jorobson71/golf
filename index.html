@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jo & Pete's Golf Pro</title>
+    <title>GOLF PRO V5</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -14,7 +14,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -22,9 +22,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            touch-action: manipulation; /* Prevents double-tap zoom delay */
         }
 
-        /* The Famous Red Bar */
         .header-bar {
             width: 100%;
             background-color: var(--accent-red);
@@ -32,15 +32,9 @@
             text-align: center;
             border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        h1 {
-            margin: 0;
-            font-size: 2.2rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        h1 { margin: 0; font-size: 2.2rem; }
 
         .setup-section {
             background: var(--card-bg);
@@ -51,14 +45,8 @@
             margin-bottom: 20px;
         }
 
-        .label {
-            font-size: 1.4rem;
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+        .label { font-size: 1.4rem; display: block; margin-bottom: 10px; font-weight: bold; }
 
-        /* Large Inputs for Pete */
         input {
             width: 100%;
             padding: 15px;
@@ -70,12 +58,18 @@
             text-align: center;
         }
 
-        /* Wind Buttons Styling */
         .wind-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
             margin-bottom: 20px;
+        }
+
+        /* Fixed buttons for Mobile */
+        .wind-btn, .club-btn {
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .wind-btn {
@@ -86,16 +80,10 @@
             border-radius: 8px;
             font-size: 1.1rem;
             font-weight: bold;
-            cursor: pointer;
         }
 
-        .wind-btn.active {
-            background: var(--accent-green);
-            border-color: white;
-            color: black;
-        }
+        .wind-btn.active { background: var(--accent-green); color: black; border-color: white; }
 
-        /* Club Button Grid */
         .club-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -111,17 +99,14 @@
             border-radius: 12px;
             border: none;
             color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            cursor: pointer;
         }
 
-        /* Distinct Colors for Clubs */
-        .driver { background: #e63946; } /* Red */
-        .wood { background: #f4a261; }   /* Orange */
-        .hybrid { background: #e9c46a; } /* Yellow */
-        .iron { background: #2a9d8f; }   /* Teal */
-        .wedge { background: #457b9d; }  /* Blue */
-        .putter { background: #8d99ae; } /* Grey */
+        .driver { background: #e63946; }
+        .wood { background: #f4a261; }
+        .hybrid { background: #e9c46a; }
+        .iron { background: #2a9d8f; }
+        .wedge { background: #457b9d; }
+        .putter { background: #8d99ae; }
 
         .result {
             margin-top: 30px;
@@ -130,6 +115,9 @@
             font-weight: bold;
             color: var(--accent-green);
             min-height: 2.5rem;
+            padding: 10px;
+            border: 1px dashed #444;
+            width: 90%;
         }
     </style>
 </head>
@@ -141,12 +129,12 @@
 
     <div class="setup-section">
         <span class="label">DISTANCE (Yards)</span>
-        <input type="number" id="yards" placeholder="Enter Yards" inputmode="numeric">
+        <input type="number" id="yards" placeholder="Tap to Enter" inputmode="numeric">
 
         <span class="label">WIND DIRECTION</span>
         <div class="wind-grid">
             <button class="wind-btn" onclick="setWind('Tail', this)">TAIL</button>
-            <button class="wind-btn" onclick="setWind('None', this)">NONE</button>
+            <button class="wind-btn active" onclick="setWind('None', this)">NONE</button>
             <button class="wind-btn" onclick="setWind('Head', this)">HEAD</button>
         </div>
     </div>
@@ -160,34 +148,22 @@
         <button class="club-btn putter" onclick="calculate('Putter')">PUTTER</button>
     </div>
 
-    <div class="result" id="output"></div>
+    <div class="result" id="output">Result will appear here</div>
 
     <script>
         let currentWind = 'None';
 
         function setWind(direction, btn) {
             currentWind = direction;
-            // Clear all active buttons
             document.querySelectorAll('.wind-btn').forEach(b => b.classList.remove('active'));
-            // Set current button to active
             btn.classList.add('active');
+            // Re-calculate if yards are already in
+            if(document.getElementById('yards').value) {
+                const currentClub = document.getElementById('output').innerText.split(' ')[0];
+                if(currentClub !== "Result" && currentClub !== "Enter") calculate(currentClub);
+            }
         }
 
         function calculate(club) {
             const yards = document.getElementById('yards').value;
             const output = document.getElementById('output');
-            
-            if (!yards) {
-                output.innerHTML = "Enter yards first!";
-                return;
-            }
-
-            let adjustment = "";
-            if (currentWind === 'Head') adjustment = " (Aim +10%)";
-            if (currentWind === 'Tail') adjustment = " (Aim -10%)";
-
-            output.innerHTML = club + " for " + yards + "y" + adjustment;
-        }
-    </script>
-</body>
-</html>
