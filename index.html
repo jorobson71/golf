@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GOLF V5</title>
+    <style>
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 0; }
+        .version-bar { background: red; color: white; text-align: center; font-weight: bold; padding: 5px; font-size: 12px; }
+        .container { padding: 10px; }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .box { border: 2px solid #00ff41; border-radius: 10px; padding: 10px; text-align: center; }
+        .label { color: #00ff41; font-size: 12px; font-weight: bold; margin-bottom: 5px; }
+        input, select { background: #111; color: #fff; border: 1px solid #333; padding: 10px; width: 80%; border-radius: 5px; font-size: 18px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; }
+        td { border-bottom: 1px solid #222; padding: 10px 0; }
+        .club-name { color: #00ff41; font-weight: bold; font-size: 20px; }
+        .carry { font-size: 35px; font-weight: bold; color: #00ff41; text-align: right; }
+        .btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-player { background: #333; color: #00ff41; }
+        .btn-club { background: #00ff41; color: #000; }
+    </style>
+</head>
+<body>
+    <div class="version-bar">VERSION 5 - NEWEST LOADED</div>
+    <div class="container">
+        <select id="userSel" onchange="changeUser()" style="width:100%; margin-bottom:10px;"></select>
+        
+        <div class="dashboard">
+            <div class="box">
+                <div class="label">TEMP °C</div>
+                <input type="number" id="temp" value="20" oninput="calc()">
+            </div>
+            <div class="box">
+                <div class="label">WIND MPH</div>
+                <input type="number" id="wind" value="0" oninput="calc()">
+                <select id="dir" onchange="calc()" style="margin-top:10px; font-size: 14px;">
+                    <option value="none">NO WIND</option>
+                    <option value="head">IN YOUR FACE</option>
+                    <option value="headDiag">DIAGONAL HEAD</option>
+                    <option value="tail">DIRECT TAILWIND</option>
+                    <option value="tailDiag">DIAGONAL TAIL</option>
+                </select>
+            </div>
+        </div>
+
+        <table id="clubTable"></table>
+
+        <div class="btns">
+            <button class="btn btn-player" onclick="addUser()">+ PLAYER</button>
+            <button class="btn btn-club" onclick="addClub()">+ CLUB</button>
+        </div>
+    </div>
+
+<script>
+    let user = "Jo";
+    let data = JSON.parse(localStorage.getItem('golfV5')) || { "Jo": [{n:'DR', b:240}, {n:'7I', b:150}] };
+
+    function init() {
+        const s = document.getElementById('userSel');
+        s.innerHTML = "";
+        Object.keys(data).forEach(n => {
+            let o = document.createElement('option');
+            o.value = n; o.innerText = "PLAYER: " + n;
+            s.appendChild(o);
+        });
+        s.value = user;
+        render();
+    }
+
+    function render() {
+        const t = document.getElementById('clubTable');
+        t.innerHTML = "";
+        data[user].forEach((c, i) => {
+            let r = t.insertRow();
+            r.innerHTML = `
+                <td><input type="text" value="${c.n}" oninput="save(${i},'n',this.value)" style="width:70px; font-size:16px;"></td>
+                <td><input type="number" value="${c.b}" oninput="save(${i},'b',this.value)" style="width:50px; font-size:16px;"></td>
+                <td class="carry" id="c-${i}">0</td>
+                <td onclick="del(${i})" style="color:red; padding-left:10px;">✕</td>
+            `;
+        });
+        calc();
+    }
+
+    function calc() {
+        const tmp = parseFloat(document.getElementById('temp').value) || 20;
+        const wnd = parseFloat(document.getElementById('wind').value) || 0;
+        const dr = document.getElementById('dir').value;
+        const tf = 1 + ((tmp - 20) * 0.0025);
+        let wf = 1;
+        if(dr==='head') wf = 1 - (wnd*0.01);
+        if(dr==='headDiag') wf = 1 - (wnd*0.707*0.01);
+        if(dr==='tail') wf = 1 + (wnd*0.005);
+        if(dr==='tailDiag') wf = 1 + (wnd*0.707*0.005);
+
+        data[user].forEach((c, i) => {
+            document.getElementById(`c-${i}`).innerText = Math.round(c.b * tf * wf);
+        });
+    }
+
+    function save(i, f, v) {
+        data[user][i][f] = (f==='b') ? parseFloat(v)||0 : v;
+        localStorage.setItem('golfV5', JSON.stringify(data));
+        calc();
+    }
+
+    function addClub() {
+        data[user].push({n:'NEW', b:100});
+        localStorage.setItem('golfV5', JSON.stringify(data));
+        render();
+    }
+
+    function addUser() {
+        let n = prompt("Name:");
+        if(n && !data[n]) {
+            data[n] = [{n:'DR', b:240}];
+            user = n;
+            localStorage.setItem('golfV5', JSON.stringify(data));
+            init();
+        }
+    }
+
+    function del(i) {
+        if(confirm("Delete?")) {
+            data[user].splice(i, 1);
+            localStorage.setItem('golfV5', JSON.stringify(data));
+            render();
+        }
+    }
+
+    function changeUser() {
+        user = document.getElementById('userSel').value;
+        render();
+    }
+
+    init();
+</script>
+</body>
+</html>
