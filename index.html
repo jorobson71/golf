@@ -3,118 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GOLF V5.2</title>
+    <title>Jo's Pro Golf Tracker</title>
     <style>
-        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; padding: 0; touch-action: manipulation; }
-        .container { padding: 15px; }
-        #userSel { 
-            width: 100%; background: #111; color: #00ff41; border: 2px solid #333; 
-            padding: 15px; border-radius: 10px; font-size: 22px; font-weight: bold; 
-            margin: 10px 0 20px 0; text-align: center;
-        }
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .box { border: 2px solid #00ff41; border-radius: 12px; padding: 12px; text-align: center; background: #000; }
-        .label { color: #00ff41; font-size: 13px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
-        input { background: #000; color: #fff; border: 1px solid #444; padding: 10px; width: 85%; border-radius: 8px; font-size: 26px; text-align: center; font-weight: bold; }
-        select { background: #000; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; font-size: 18px; width: 100%; font-weight: bold; }
+        body { font-family: -apple-system, sans-serif; background: #000; color: #fff; margin: 0; padding: 5px; }
+        .container { max-width: 100%; margin: auto; }
+        
+        .dashboard { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-bottom: 15px; }
+        .control-box { background: #000; border: 3px solid #00ff41; border-radius: 12px; padding: 8px; text-align: center; }
+        .label { color: #00ff41; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; margin-bottom: 2px; }
+        .val-input { font-size: 2.5rem; width: 100%; border: none; background: transparent; color: #fff; font-weight: 900; text-align: center; outline: none; }
+        
+        .wind-dir-select { width: 100%; background: #111; color: #00ff41; border: 2px solid #00ff41; border-radius: 8px; font-weight: 900; padding: 12px 5px; margin-top: 5px; font-size: 1rem; appearance: none; text-align: center; }
+
         table { width: 100%; border-collapse: collapse; }
-        td { border-bottom: 1px solid #222; padding: 18px 0; }
-        .club-name { color: #ffffff; font-weight: bold; font-size: 28px; width: 40%; }
-        .carry { font-size: 55px; font-weight: bold; color: #00ff41; text-align: right; }
-        .btns { display: flex; gap: 15px; margin-top: 30px; padding-bottom: 30px; }
-        .btn { flex: 1; padding: 18px; border-radius: 12px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; }
-        .btn-player { background: #222; color: #fff; border: 1px solid #444; }
-        .btn-club { background: #00ff41; color: #000; }
+        .club-cell { width: 40%; padding: 15px 0; }
+        .club-input { font-size: 2.2rem; font-weight: 900; color: #00ff41; background: transparent; border: none; width: 100%; text-transform: uppercase; outline: none; }
+        .base-cell { width: 15%; text-align: center; }
+        .base-input { font-size: 1rem; width: 50px; padding: 5px; background: #111; color: #333; border: 1px solid #222; border-radius: 4px; text-align: center; }
+        .carry-cell { width: 35%; text-align: right; }
+        .carry-val { font-size: 4.2rem; font-weight: 900; color: #00ff41; line-height: 0.8; }
+        
+        /* Subtle Delete Button */
+        .del-cell { width: 10%; text-align: right; }
+        .btn-del { background: transparent; color: #222; border: none; font-size: 1.5rem; padding: 10px; cursor: pointer; }
+
+        tr { border-bottom: 2px solid #222; }
+        
+        .admin-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 900; border: none; cursor: pointer; }
+        .btn-add { background: #00ff41; color: #000; }
+        .btn-user { background: #222; color: #00ff41; border: 1px solid #00ff41; }
+        
+        select#profileSelect { width: 100%; padding: 15px; background: #111; color: #fff; border: 2px solid #333; margin-bottom: 10px; font-weight: bold; border-radius: 10px; font-size: 1.2rem; appearance: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <select id="userSel" onchange="changeUser()"></select>
-        <div class="dashboard">
-            <div class="box">
-                <div class="label">TEMP °C</div>
-                <input type="number" id="temp" value="20" oninput="calc()">
-            </div>
-            <div class="box">
-                <div class="label">WIND MPH</div>
-                <input type="number" id="wind" value="0" oninput="calc()">
-                <select id="dir" onchange="calc()" style="margin-top:10px;">
-                    <option value="none">NO WIND</option>
-                    <option value="head">IN FACE</option>
-                    <option value="tail">FOLLOWING</option>
-                </select>
-            </div>
+
+<div class="container">
+    <select id="profileSelect" onchange="switchProfile()"></select>
+
+    <div class="dashboard">
+        <div class="control-box">
+            <div class="label">Temp °C</div>
+            <input type="number" id="currentTemp" class="val-input" value="20" oninput="updateCalculations()">
         </div>
-        <table id="clubTable"></table>
-        <div class="btns">
-            <button class="btn btn-player" onclick="addUser()">+ Player</button>
-            <button class="btn btn-club" onclick="addClub()">+ Club</button>
+        
+        <div class="control-box">
+            <div class="label">Wind MPH</div>
+            <input type="number" id="windSpeed" class="val-input" value="0" oninput="updateCalculations()">
+            <select id="windDir" class="wind-dir-select" onchange="updateCalculations()">
+                <option value="none">NO WIND</option>
+                <option value="head">IN YOUR FACE</option>
+                <option value="headDiag">DIAGONAL HEAD</option>
+                <option value="tail">DIRECT TAILWIND</option>
+                <option value="tailDiag">DIAGONAL TAIL</option>
+            </select>
         </div>
     </div>
+
+    <table>
+        <tbody id="clubBody"></tbody>
+    </table>
+
+    <div class="admin-btns">
+        <button class="btn btn-user" onclick="addNewProfile()">+ PLAYER</button>
+        <button class="btn btn-add" onclick="addOneClub()">+ CLUB</button>
+    </div>
+</div>
+
 <script>
-    let user = "Jo";
-    // I added your clubs back in here so it's not empty!
-    let data = JSON.parse(localStorage.getItem('golfSunModeV3')) || { 
-        "Jo": [{n:'DR', b:250}, {n:'3W', b:224}, {n:'4H', b:204}, {n:'7I', b:150}],
-        "Pete": [{n:'DR', b:230}, {n:'5W', b:200}, {n:'7I', b:140}]
-    };
+    let currentProfile = "Jo"; 
+    const defaultSet = [
+        { name: 'DR', base: 240 }, { name: '7I', base: 150 }, { name: 'PW', base: 110 }
+    ];
+
+    let allData = JSON.parse(localStorage.getItem('golfProfiles')) || { "Jo": [...defaultSet] };
 
     function init() {
-        const s = document.getElementById('userSel');
-        s.innerHTML = "";
-        Object.keys(data).forEach(n => {
-            let o = document.createElement('option');
-            o.value = n; o.innerText = "PLAYER: " + n.toUpperCase();
-            s.appendChild(o);
+        if (!allData[currentProfile]) currentProfile = Object.keys(allData)[0];
+        populateProfileList();
+        renderTable();
+    }
+
+    function populateProfileList() {
+        const select = document.getElementById('profileSelect');
+        select.innerHTML = "";
+        Object.keys(allData).forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name; opt.innerText = "PLAYER: " + name;
+            select.appendChild(opt);
         });
-        s.value = user;
-        render();
+        select.value = currentProfile;
     }
 
-    function render() {
-        const t = document.getElementById('clubTable');
-        t.innerHTML = "";
-        data[user].forEach((c, i) => {
-            let r = t.insertRow();
-            r.innerHTML = `<td class="club-name" onclick="editClub(${i})">${c.n}</td><td class="carry" id="c-${i}">0</td><td onclick="del(${i})" style="color:#333; font-size:18px; text-align:right; padding-left:10px;">✕</td>`;
+    function renderTable() {
+        const tableBody = document.getElementById('clubBody');
+        tableBody.innerHTML = "";
+        allData[currentProfile].forEach((club, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="club-cell"><input type="text" class="club-input" value="${club.name}" oninput="saveDataLocal(${index}, 'name', this.value)"></td>
+                <td class="base-cell"><input type="number" class="base-input" value="${club.base}" oninput="saveDataLocal(${index}, 'base', this.value)"></td>
+                <td class="carry-cell"><span class="carry-val" id="adj-${index}">0</span></td>
+                <td class="del-cell"><button class="btn-del" onclick="removeClub(${index})">✕</button></td>
+            `;
+            tableBody.appendChild(row);
         });
-        calc();
+        updateCalculations();
     }
 
-    function calc() {
-        const tmp = parseFloat(document.getElementById('temp').value) || 20;
-        const wnd = parseFloat(document.getElementById('wind').value) || 0;
-        const dr = document.getElementById('dir').value;
-        const tf = 1 + ((tmp - 20) * 0.0025);
-        let wf = 1;
-        if(dr==='head') wf = 1 - (wnd*0.01);
-        if(dr==='tail') wf = 1 + (wnd*0.005);
-        data[user].forEach((c, i) => {
-            document.getElementById(`c-${i}`).innerText = Math.round(c.b * tf * wf);
+    function updateCalculations() {
+        const temp = parseFloat(document.getElementById('currentTemp').value) || 0;
+        const wind = parseFloat(document.getElementById('windSpeed').value) || 0;
+        const dir = document.getElementById('windDir').value;
+
+        const tempFactor = 1 + ((temp - 20) * 0.0025);
+        let windFactor = 1;
+        const diagAdjust = 0.707; 
+
+        if (dir === 'head') windFactor = 1 - (wind * 0.01);
+        if (dir === 'headDiag') windFactor = 1 - (wind * diagAdjust * 0.01);
+        if (dir === 'tail') windFactor = 1 + (wind * 0.005);
+        if (dir === 'tailDiag') windFactor = 1 + (wind * diagAdjust * 0.005);
+
+        allData[currentProfile].forEach((club, index) => {
+            const result = Math.round(club.base * tempFactor * windFactor);
+            const el = document.getElementById(`adj-${index}`);
+            if(el) el.innerText = result;
         });
     }
 
-    function editClub(i) {
-        let newDist = prompt("Set baseline for " + data[user][i].n, data[user][i].b);
-        if (newDist) { data[user][i].b = parseFloat(newDist); localStorage.setItem('golfSunModeV3', JSON.stringify(data)); render(); }
+    function saveDataLocal(index, field, value) {
+        if (field === 'base') value = parseFloat(value) || 0;
+        allData[currentProfile][index][field] = value;
+        localStorage.setItem('golfProfiles', JSON.stringify(allData));
+        updateCalculations();
     }
 
-    function addClub() {
-        let n = prompt("Club Name:");
-        let b = prompt("Baseline Distance:");
-        if(n && b) { data[user].push({n: n.toUpperCase(), b: parseFloat(b)}); localStorage.setItem('golfSunModeV3', JSON.stringify(data)); render(); }
+    function addOneClub() {
+        allData[currentProfile].push({ name: 'NEW', base: 100 });
+        localStorage.setItem('golfProfiles', JSON.stringify(allData));
+        renderTable();
     }
 
-    function addUser() {
-        let n = prompt("New Player Name:");
-        if(n && !data[n]) { data[n] = [{n:'DR', b:200}]; user = n; localStorage.setItem('golfSunModeV3', JSON.stringify(data)); init(); }
+    function removeClub(index) {
+        if(confirm("Remove this club?")) {
+            allData[currentProfile].splice(index, 1);
+            localStorage.setItem('golfProfiles', JSON.stringify(allData));
+            renderTable();
+        }
     }
 
-    function del(i) {
-        if(confirm("Delete?")) { data[user].splice(i, 1); localStorage.setItem('golfSunModeV3', JSON.stringify(data)); render(); }
+    function switchProfile() {
+        currentProfile = document.getElementById('profileSelect').value;
+        renderTable();
     }
 
-    function changeUser() { user = document.getElementById('userSel').value; render(); }
+    function addNewProfile() {
+        const name = prompt("Enter Player Name:");
+        if (name && !allData[name]) {
+            allData[name] = JSON.parse(JSON.stringify(defaultSet));
+            currentProfile = name;
+            localStorage.setItem('golfProfiles', JSON.stringify(allData));
+            populateProfileList();
+            renderTable();
+        }
+    }
+
     init();
 </script>
 </body>
